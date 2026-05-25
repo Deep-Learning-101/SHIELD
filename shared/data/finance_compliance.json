@@ -1,0 +1,38 @@
+[
+  {
+    "rule_id": "GOV-ID-001",
+    "domain": "Identity-Security",
+    "description": "身分與邊界安全規範 (Zero Trust) - VPN 登入需嚴格控管。若偵測到高權限 AD 帳密外洩情報，應立即停用受駭帳號，並強制阻斷關聯之 VPN Session。",
+    "target_roles": ["Identity_Provider", "Network_Boundary"]
+  },
+  {
+    "rule_id": "GOV-DATA-002",
+    "domain": "Data-Privacy",
+    "description": "個人資料保護與資料庫稽核 (GDPR/PDPA) - 核心資料庫具備最高機密等級。若面臨未授權存取威脅，除身分阻斷外，需啟動 EDR 進行端點記憶體掃描，嚴防資料表遭 Dump 匯出。",
+    "target_roles": ["Core_Database"]
+  },
+  {
+    "rule_id": "GOV-CLOUD-003",
+    "domain": "Cloud-Security",
+    "description": "雲端資源與開發管線安控 - AWS IAM Access Key 嚴禁存放於公開網域。一旦發生洩漏，需立刻透過 IAM API 撤銷金鑰，盤點 S3 存取日誌，並觸發 K8s 容器群集與 CI/CD 金鑰輪替。",
+    "target_roles": ["DevOps_Infrastructure", "Cloud_Storage", "Microservices_Platform"]
+  },
+  {
+    "rule_id": "GOV-NET-004",
+    "domain": "Infrastructure-Security",
+    "description": "伺服器與網段隔離規範 (ISO 27001) - 發現具備 RCE 之 0-day 漏洞且無法立即修補時，應透過 WAF 阻擋惡意特徵，並將受害虛擬機 (VM) 網卡動態切換至隔離 VLAN 進行快照保全。",
+    "target_roles": ["Legacy_Application", "Network_Segment", "Web_Firewall"]
+  },
+  {
+    "rule_id": "FSC-SWIFT-005",
+    "domain": "Financial-Compliance",
+    "description": "金管會 SWIFT 系統安控基準 - 核心跨國交易閘道器若位於受威脅網段內，應立即啟動備援機制 (DR)，暫停該節點之對外匯款授權，並通報金管會資安通報平台 (F-ISAC)。",
+    "target_roles": ["Financial_Gateway"]
+  },
+  {
+    "rule_id": "GOV-VIP-006",
+    "domain": "Executive-Protection",
+    "description": "高階主管 (C-Level) 端點防禦協定 - 若偵測到針對 VIP 端點設備的釣魚或間諜軟體威脅，應強制吊銷該設備的內網存取憑證，並派送緊急工單由專人進行實體設備檢測。",
+    "target_roles": ["VIP_Endpoint", "Enterprise_Resource"]
+  }
+]

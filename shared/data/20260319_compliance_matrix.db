@@ -1,0 +1,49 @@
+[
+  {
+    "rule_id": "ISO-27001-A.9.2.3",
+    "domain": "Access Control",
+    "description": "管理特權存取權限：針對所有核心資料庫(Database)，必須限制並嚴格控管特權存取，強制啟用 MFA 雙重認證。",
+    "target_roles": ["Database"]
+  },
+  {
+    "rule_id": "ISO-27001-A.12.6.1",
+    "domain": "Vulnerability Management",
+    "description": "技術漏洞管理：對外服務的伺服器若發現 CVE 漏洞，需於 24 小時內修補或進行隔離。",
+    "target_roles": ["WebServer", "APIGateway"]
+  },
+  {
+    "rule_id": "FSC-CyberSec-001",
+    "framework": "金融會資安基準",
+    "domain": "Vulnerability Management",
+    "description": "DMZ 區對外服務弱點修補：遭受 CVSS 8.0 以上之漏洞威脅，需於 12 小時內完成修補。",
+    "target_roles": ["APIGateway", "WebServer"]
+  },
+  {
+    "rule_id": "ISO-27001-A.8.1",
+    "framework": "ISO 27001:2022",
+    "domain": "Asset Management",
+    "description": "Tier-1 核心資產隔離：資料庫與備份伺服器嚴禁與對外網段直接連通，強制啟用防篡改。",
+    "target_roles": ["Database", "BackupServer"]
+  },
+  {
+    "rule_id": "GDPR-Art-32",
+    "framework": "GDPR",
+    "domain": "Data Privacy",
+    "description": "個人隱私資料加密：處理員工或客戶資料之節點，必須採用 AES-256 進行靜態資料加密 (Data at Rest)。",
+    "target_roles": ["Database", "Security"]
+  },
+  {
+    "rule_id": "OWASP-LLM-01",
+    "framework": "AI Security Governance",
+    "domain": "AI Risk Management",
+    "description": "提示詞注入防禦：所有大型語言模型推論節點，必須部署 NeMo Guardrails 等護欄機制防堵越獄攻擊。",
+    "target_roles": ["AIServer"]
+  },
+  {
+    "rule_id": "Zero-Trust-001",
+    "framework": "NIST 800-207",
+    "domain": "Identity",
+    "description": "持續性驗證：內部 API 路由與身分管控伺服器，須落實微隔離 (Micro-segmentation) 政策。",
+    "target_roles": ["APIGateway", "Security"]
+  }
+]

@@ -1,0 +1,10 @@
+Asset_ID,Hostname,IP_Address,VLAN,OS,Software,Criticality,Role,Owner,Department,Business_Service
+SRV-DB-01,Finance-Core-DB,10.0.50.11,VLAN-50-Secure,Ubuntu 22.04,MySQL 8.0.31,Tier-1,Database,tonyd,Finance,Core_Accounting
+SRV-DB-02,HR-Employee-DB,10.0.50.12,VLAN-50-Secure,Windows Server 2022,MS SQL 2019,Tier-1,Database,alicew,HR,Payroll
+SRV-API-01,Ext-API-Gateway,192.168.1.5,VLAN-10-DMZ,Alpine Linux,Nginx 1.18.0,Tier-2,APIGateway,bobm,IT,Partner_API
+SRV-API-02,Int-API-Gateway,10.0.30.5,VLAN-30-Internal,Ubuntu 22.04,Kong 3.0,Tier-2,APIGateway,bobm,IT,Internal_Routing
+SRV-WEB-01,Corp-Website,192.168.1.10,VLAN-10-DMZ,CentOS 8,Apache 2.4.49,Tier-2,WebServer,charliek,Marketing,Public_Site
+SRV-WEB-02,HR-Portal,10.0.30.22,VLAN-30-Internal,Windows Server 2022,IIS 10.0,Tier-3,WebServer,alicew,HR,Employee_Portal
+SRV-SEC-01,IAM-Server,10.0.99.10,VLAN-99-Mgmt,RedHat 8,Keycloak 21.0,Tier-1,Security,davidc,IT,Identity_Mgmt
+SRV-AI-01,GPU-Compute-01,10.0.40.15,VLAN-40-AI,Ubuntu 22.04,Ollama 0.1.20,Tier-2,AIServer,evans,Data,Model_Inference
+SRV-BKP-01,Core-Backup,10.0.99.50,VLAN-99-Mgmt,FreeBSD,Veeam 12,Tier-1,BackupServer,davidc,IT,Disaster_Recovery

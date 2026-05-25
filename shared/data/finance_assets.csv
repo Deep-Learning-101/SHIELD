@@ -1,0 +1,14 @@
+Asset_ID,IP_Address,OS,Software,Role,Owner,Department
+DB-Server-01,10.0.1.50,Linux_RHEL,Oracle_DB,Core_Database,DBA_Team,資訊管理處
+AD-Controller,10.0.1.10,Windows_Server,Active_Directory,Identity_Provider,IAM_Admin,資訊安全處
+VPN-Gateway,203.0.113.5,Proprietary,FortiGate_VPN,Network_Boundary,Net_Admin,網路工程部
+CI/CD_Pipeline,10.0.5.100,Linux_Ubuntu,GitLab_Runner,DevOps_Infrastructure,DevOps_Team,軟體開發處
+Backup-Storage,Cloud_Native,AWS_S3,S3_Bucket,Cloud_Storage,Cloud_Admin,雲端架構部
+Web-Server-01,10.0.3.15,Windows_Server,Legacy_IIS,Legacy_Application,IT_Ops,IT維運部
+Internal-Network-VLAN,10.0.0.0/16,N/A,VLAN_Routing,Network_Segment,Net_Admin,網路工程部
+CEO-Laptop,172.16.1.10,Windows_11,CrowdStrike_EDR,VIP_Endpoint,CEO_Office,總經理室
+WAF-Appliance,203.0.113.10,Proprietary,F5_BIG-IP,Web_Firewall,Sec_Ops,資訊安全處
+K8s-Cluster,10.0.6.0/24,Linux_CoreOS,Kubernetes,Microservices_Platform,DevOps_Team,軟體開發處
+IOT-CAM-01,10.0.9.101,Embedded_Linux,Hikvision_Firmware,IoT_Camera,Dave,實體安全課
+SRV-VND-01,172.16.0.5,Linux_Ubuntu,Vendor_HR_System,Outsourced_System,Frank,人力資源部
+SRV-SWIFT-01,10.0.5.50,Linux_SLES,SWIFT_Alliance,SWIFT_Gateway,Eve,財務部交易室

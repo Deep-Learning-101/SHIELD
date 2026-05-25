@@ -1,0 +1,183 @@
+# 🛡️ SHIELD Phase 5: AI 審計與合規模組
+
+**Automated Audit & Assurance (自動化審計與合規)** - 零信任 AI 治理平台
+
+**[TonTon H.-D. Huang Ph.D.](https://TWMAN.ORG)**
+
+---
+
+## 📋 模組概述
+
+本模組是 S.H.I.E.L.D. 防禦系統的 **Phase 5** 核心實現，負責對企業主權 AI 大腦進行全自動化的安全審計與合規驗證。
+
+### 核心功能
+
+- **紅藍隊自主對抗**：使用 Garak、FuzzyAI 等工具進行提示詞注入與越獄攻擊
+- **護欄評估**：量化評估 NeMo Guardrails 的防禦有效性
+- **幻覺檢測**：透過 TruLens、Giskard 檢測 RAG 系統的事實性
+- **合規映射**：自動對齊 ISO/IEC 42001 控制項，生成獨立驗證報告
+
+### Actor-Judge 雙腦架構
+
+```
+攻擊端 (Actor)          目標端 (Target)        裁判端 (Judge)
+├─ Garak              ├─ 客戶 AI 系統       ├─ GuardVal
+├─ FuzzyAI            ├─ NeMo Guards        ├─ TruLens
+├─ Gemma-CRACK        └─ Vectorless RAG     ├─ Giskard
+├─ IBM ART                                  ├─ SHAP
+└─ Foolbox                                  └─ Captum
+```
+
+---
+
+## 🚀 快速開始
+
+### 前置需求
+
+- Python 3.10+
+- Conda 或 Python venv
+- 已完成 SHIELD Core 模組安裝
+
+### 安裝步驟
+
+#### 方式 A：使用 Conda（推薦）
+
+```bash
+cd modules/eval
+./scripts/setup_conda_env.sh
+conda activate shield-audit-env
+```
+
+#### 方式 B：使用 Python venv
+
+```bash
+cd modules/eval
+python3 -m venv audit-env
+source audit-env/bin/activate  # Windows: audit-env\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 配置審計目標
+
+1. 複製範例配置：
+   ```bash
+   cp config/audit_config.example.yaml config/audit_config.yaml
+   ```
+
+2. 編輯 `config/audit_config.yaml`，設定你的 AI 系統端點：
+   ```yaml
+   audit_target:
+     name: "My_AI_System"
+     endpoint: "https://your-api.com/v1/infer"
+     auth_token: "${SHIELD_TARGET_API_KEY}"
+   ```
+
+3. 設定環境變數：
+   ```bash
+   export SHIELD_TARGET_API_KEY="your_api_key"
+   ```
+
+### 執行審計
+
+```bash
+# 使用快速啟動腳本
+./scripts/run_audit.sh
+
+# 或直接使用 Inspect AI CLI
+inspect eval src/shield_audit_workflow.py
+
+# 測試模式（不實際執行審計）
+python src/shield_audit_workflow.py
+```
+
+### 查看報告
+
+審計完成後，報告將位於：
+
+```
+../../shared/data/audit_results/
+├── summary.json          # 量化指標摘要
+├── detailed_log.jsonl    # 詳細互動日誌
+└── html_report.html      # 人類可讀報告
+```
+
+---
+
+## 📚 詳細文檔
+
+- [架構說明](docs/ARCHITECTURE.md)
+- [Conda 設置指南](docs/CONDA_SETUP_GUIDE.md)
+- [部署總結](docs/DEPLOYMENT_SUMMARY.md)
+- [快速開始](docs/QUICK_START.md)
+
+---
+
+## 🔗 與 Core 模組的整合
+
+### 引用 Core 功能
+
+```python
+import sys
+import os
+
+# 將 core 加入 Python 路徑
+SHIELD_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.join(SHIELD_ROOT, "core"))
+
+# 引用 core 功能
+from llm import get_llm
+from config import load_config
+```
+
+### 使用共享資源
+
+```python
+# 讀取共享資料
+SHARED_DATA_DIR = os.path.join(SHIELD_ROOT, "shared", "data")
+compliance_db = os.path.join(SHARED_DATA_DIR, "20260319_compliance_matrix.db")
+
+# 寫入審計報告
+AUDIT_RESULTS_DIR = os.path.join(SHARED_DATA_DIR, "audit_results")
+```
+
+---
+
+## 🧪 測試
+
+```bash
+# 執行單元測試
+pytest tests/
+
+# 執行特定測試
+pytest tests/test_workflow.py -v
+
+# 生成覆蓋率報告
+pytest --cov=src tests/
+```
+
+---
+
+## 🔒 安全性與合規
+
+### 資料保護
+
+- ✅ 所有審計日誌儲存於本地 `shared/data/audit_results/`
+- ✅ API 金鑰透過環境變數管理，不寫入配置文件
+- ✅ `audit_results/` 已加入 `.gitignore`，不會推送至 GitHub
+
+### 使用限制
+
+本模組僅限於以下合法用途：
+- 企業內部 AI 系統安全審計
+- 授權紅隊演練 (Authorized Red Teaming)
+- 學術研究與教學
+
+**嚴禁**：
+- 未經授權攻擊第三方 AI 服務
+- 生成或傳播惡意內容
+- 違反服務條款或當地法律的行為
+
+---
+
+**版本**: v1.0.0  
+**最後更新**: 2026-05-25

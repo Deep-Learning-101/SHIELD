@@ -1,0 +1,27 @@
+# === S.H.I.E.L.D. 核心與暗網探勘 ===
+streamlit
+requests
+bs4
+pysocks
+python-dotenv
+networkx
+pyvis
+
+# === LLM 路由與 LangChain 框架 ===
+langchain-openai
+langchain-ollama
+langchain-anthropic
+langchain_community
+langchain_google_genai
+google-genai
+
+# === PageIndex 無向量檢索與 PDF 處理 ===
+litellm==1.82.0
+pymupdf==1.26.4
+PyPDF2==3.0.1
+pyyaml==6.0.2
+opendataloader-pdf
+pillow
+
+# === 系統相依 ===
+backports.tarfile
