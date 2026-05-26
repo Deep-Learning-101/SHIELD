@@ -477,19 +477,42 @@ if app_mode == "🎯 情資防禦戰情室":
 
     with tab_phase2:
         st.markdown("### 🌐 [Phase 2] Omni-Source 暗網威脅狩獵")
-        col_input, col_btn1, col_btn2 = st.columns([6, 2, 2])
+        col_input, col_btn1, col_btn2, col_btn3 = st.columns([5, 2, 2, 1.5])
         with col_input: darkweb_query = st.text_input("輸入暗網追蹤關鍵字", key="dw_query")
-        with col_btn1: 
+        with col_btn1:
             st.markdown("<br>", unsafe_allow_html=True)
-            real_search_btn = st.button("🚀 暗網探針", width='stretch')
-        with col_btn2: 
+            real_search_btn = st.button("🚀 暗網探針", use_container_width=True)
+        with col_btn2:
             st.markdown("<br>", unsafe_allow_html=True)
-            demo_search_btn = st.button("🎭 暗網展示", width='stretch')
+            demo_search_btn = st.button("🎭 暗網展示", use_container_width=True)
+        with col_btn3:
+            st.markdown("<br>", unsafe_allow_html=True)
+            reset_btn = st.button("🔄 重置", use_container_width=True)
+
+        # 🔄 重置分析狀態
+        if reset_btn:
+            st.session_state.darkweb_results = None
+            st.session_state.analysis_done = False
+            if "target_sw" in st.session_state:
+                del st.session_state.target_sw
+            if "combined_content" in st.session_state:
+                del st.session_state.combined_content
+            st.session_state.generated_rule = ""
+            st.success("✅ 已重置分析狀態，可進行下一次搜尋")
+            st.rerun()
 
         if real_search_btn and darkweb_query:
+            # 🆕 自動重置舊狀態
+            st.session_state.analysis_done = False
+            st.session_state.generated_rule = ""
+            if "target_sw" in st.session_state:
+                del st.session_state.target_sw
+            if "combined_content" in st.session_state:
+                del st.session_state.combined_content
+
             try:
                 with st.spinner("🤖 正在透過 LLM 優化搜尋提示詞..."):
-                    llm = get_llm("gemini-2.5-flash") 
+                    llm = get_llm("gemini-2.5-flash")
                     refined_q = refine_query(llm, darkweb_query)
                     st.success(f"🎯 LLM 優化搜尋詞: `{refined_q}`")
                     
@@ -512,6 +535,14 @@ if app_mode == "🎯 情資防禦戰情室":
         
         # 🌟 完整保留的展示劇本
         if demo_search_btn:
+            # 🆕 自動重置舊狀態
+            st.session_state.analysis_done = False
+            st.session_state.generated_rule = ""
+            if "target_sw" in st.session_state:
+                del st.session_state.target_sw
+            if "combined_content" in st.session_state:
+                del st.session_state.combined_content
+
             import random
             demo_scenarios = [
                 {
@@ -566,40 +597,87 @@ if app_mode == "🎯 情資防禦戰情室":
                 if G is None:
                     st.error("❌ 知識圖譜尚未建置！請先完成資料載入。")
                 else:
-                    if "target_sw" not in st.session_state:
-                        with st.spinner("🤖 正在由 LLM 深度閱讀暗網內文，萃取威脅實體..."):
-                            combined_content = "\n".join([res.get('content', res.get('title', '')) for res in st.session_state.darkweb_results])
-                            extraction_prompt = f"""
-                            你是一名資安專家。請從以下暗網情報中，過濾掉廣告或無關的內容，找出駭客**真正意圖攻擊或利用的「軟體或系統名稱」**。
-                            請注意：
-                            1. 忽略如 OnionLand Hosting, WordPress Hosting 等廣告服務的介紹。
-                            2. 專注尋找提及 exploit, 0-day, leak, vulnerability 或 backdoor 的標的。
-                            請務必只輸出合法的 JSON 格式，包含以下欄位：
-                            - target_software: 目標軟體與版本 (例如 Hikvision_Firmware, Vendor_HR_System, SWIFT_Alliance, Apache, WordPress 等，若無明確攻擊標的則填 Unknown)
-                            情報內容：
-                            {combined_content[:4000]}
-                            """
-                            try:
-                                if gemini_client:
-                                    response = gemini_client.models.generate_content(
-                                        model='gemini-2.5-flash',
-                                        contents=extraction_prompt
-                                    )
-                                    clean_json_str = response.text.replace('```json', '').replace('```', '').strip()
-                                    dynamic_threat_entity = json.loads(clean_json_str)
-                                    st.session_state.target_sw = dynamic_threat_entity.get("target_software", "Unknown")
-                                    st.session_state.combined_content = combined_content 
-                                else:
-                                    st.error("Gemini API 未初始化！")
-                                    st.session_state.target_sw = "Unknown"
-                            except Exception as e:
-                                st.error(f"LLM 萃取失敗：{e}")
+                    # 🆕 每次分析都重新萃取，確保使用最新的 darkweb_results
+                    with st.spinner("🤖 正在由 LLM 深度閱讀暗網內文，萃取威脅實體..."):
+                        combined_content = "\n".join([res.get('content', res.get('title', '')) for res in st.session_state.darkweb_results])
+
+                        # 從 Graph 中取得我們已知的軟體清單
+                        known_software = set()
+                        for n, attr in G.nodes(data=True):
+                            if attr.get('type') == 'Asset' and 'software' in attr:
+                                known_software.add(attr['software'])
+
+                        extraction_prompt = f"""
+你是一名資安專家。請從以下暗網情報中，找出駭客**真正意圖攻擊或利用的「軟體或系統名稱」**。
+
+**萃取規則**：
+1. 忽略廣告或無關服務（如 OnionLand Hosting, WordPress Hosting）
+2. 專注尋找與 exploit, 0-day, leak, vulnerability, backdoor 相關的標的
+3. **保留完整的軟體名稱**（例如：Hikvision_Firmware, SWIFT_Alliance, GitLab_Runner）
+4. 若提及系統類型但無具體名稱，則返回類型名稱（如：Vendor_HR_System, Oracle_DB）
+5. 若無明確攻擊標的則填 "Unknown"
+
+**參考我們內部已知的軟體清單**（優先從這些名稱中選擇）：
+{', '.join(sorted(known_software))}
+
+請務必只輸出合法的 JSON 格式：
+{{
+  "target_software": "精確的軟體名稱或 Unknown"
+}}
+
+情報內容：
+{combined_content[:4000]}
+"""
+                        try:
+                            if gemini_client:
+                                response = gemini_client.models.generate_content(
+                                    model='gemini-2.5-flash',
+                                    contents=extraction_prompt
+                                )
+                                clean_json_str = response.text.replace('```json', '').replace('```', '').strip()
+                                dynamic_threat_entity = json.loads(clean_json_str)
+                                st.session_state.target_sw = dynamic_threat_entity.get("target_software", "Unknown")
+                                st.session_state.combined_content = combined_content
+                            else:
+                                st.error("Gemini API 未初始化！")
                                 st.session_state.target_sw = "Unknown"
-                                
+                        except Exception as e:
+                            st.error(f"LLM 萃取失敗：{e}")
+                            st.session_state.target_sw = "Unknown"
+
                     target_sw = st.session_state.get("target_sw", "Unknown")
                     st.success(f"✅ LLM 實體萃取完成！目標: `{target_sw}`")
-                    
-                    impacted_assets = [n for n, attr in G.nodes(data=True) if attr.get('type') == 'Asset' and target_sw.lower() in attr.get('title', '').lower()]
+
+                    # 🆕 改進的資產比對邏輯：使用 software 屬性並支援模糊匹配
+                    def fuzzy_match_software(target_sw, asset_software):
+                        """模糊匹配軟體名稱"""
+                        if not target_sw or not asset_software:
+                            return False
+
+                        target_lower = target_sw.lower().replace('_', ' ').replace('-', ' ')
+                        asset_lower = asset_software.lower().replace('_', ' ').replace('-', ' ')
+
+                        # 完全匹配
+                        if target_lower == asset_lower:
+                            return True
+
+                        # 包含匹配
+                        if target_lower in asset_lower or asset_lower in target_lower:
+                            return True
+
+                        # 主要關鍵字匹配（例如 "SWIFT" 匹配 "SWIFT Alliance"）
+                        target_parts = target_lower.split()
+                        asset_parts = asset_lower.split()
+                        if any(tp in asset_parts for tp in target_parts if len(tp) > 3):
+                            return True
+
+                        return False
+
+                    impacted_assets = [
+                        n for n, attr in G.nodes(data=True)
+                        if attr.get('type') == 'Asset'
+                        and fuzzy_match_software(target_sw, attr.get('software', ''))
+                    ]
                     
                     if not impacted_assets:
                         st.info(f"ℹ️ 內部資產並未發現 `{target_sw}`，系統目前安全。")
