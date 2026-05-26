@@ -4,6 +4,13 @@
 
 **[TonTon H.-D. Huang Ph.D.](https://TWMAN.ORG)**
 
+- **相關文件**
+  - [**專案說明文檔**](https://deep-learning-101.github.io/SHIELD/PROJECT-OVERVIEW)
+  - [**Core Module**](https://deep-learning-101.github.io/SHIELD/core/)
+  - [**Shared Resources**](https://deep-learning-101.github.io/SHIELD/shared/)
+  - [**Modules**](https://deep-learning-101.github.io/SHIELD/modules/)
+  - [**Phase 5: AI 審計與合規模組**](https://deep-learning-101.github.io/SHIELD/modules/eval/)
+  - [**審計報告目錄**](https://deep-learning-101.github.io/SHIELD/shared/data/audit_results/)
 
 ---
 

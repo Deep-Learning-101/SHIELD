@@ -20,6 +20,13 @@
 - [技術棧](#技術棧)
 - [部署指南](#部署指南)
 - [安全性與合規](#安全性與合規)
+- **相關文件**
+  - [**專案說明文檔**](https://deep-learning-101.github.io/SHIELD/PROJECT-OVERVIEW)
+  - [**Core Module**](https://deep-learning-101.github.io/SHIELD/core/)
+  - [**Shared Resources**](https://deep-learning-101.github.io/SHIELD/shared/)
+  - [**Modules**](https://deep-learning-101.github.io/SHIELD/modules/)
+  - [**Phase 5: AI 審計與合規模組**](https://deep-learning-101.github.io/SHIELD/modules/eval/)
+  - [**審計報告目錄**](https://deep-learning-101.github.io/SHIELD/shared/data/audit_results/)
 
 ---
 
@@ -861,19 +868,6 @@ find . -name "*.md" | wc -l
 
 ---
 
-## 📞 聯絡資訊
-
-### 專案作者
-- **姓名**: TonTon H.-D. Huang Ph.D.
-- **Email**: TonTon@TWMAN.ORG
-- **網站**: https://TWMAN.ORG
-
-### 技術支援
-- **GitHub Issues**: https://github.com/Deep-Learning-101/SHIELD/issues
-- **文檔**: [SHIELD README](README.md)
-
----
-
 ## 📚 參考資源
 
 ### 學術論文
@@ -898,7 +892,7 @@ find . -name "*.md" | wc -l
 
 **專案版本**: v1.0  
 **文檔版本**: v1.0  
-**最後更新**: 2026-05-25  
+**最後更新**: 2026-05-26  
 **作者**: TonTon H.-D. Huang Ph.D.  
 
 *本文件由 Claude Sonnet 4.5 協助生成*  

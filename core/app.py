@@ -683,10 +683,12 @@ if app_mode == "🎯 情資防禦戰情室":
                         st.info(f"ℹ️ 內部資產並未發現 `{target_sw}`，系統目前安全。")
                     else:
                         st.error(f"💥 **[系統緊急警報] 偵測到地端資產吻合暗網威脅特徵 `{target_sw}`！**")
+                        st.markdown(f"**🎯 受影響資產**: `{'`, `'.join(impacted_assets)}`")
+
                         violated_rules_set = set()
                         for asset in impacted_assets:
                             violated_rules = [v for u, v, d in G.edges(data=True) if u == asset and d.get('relation') == 'MUST_COMPLY_WITH']
-                            for rule in violated_rules: violated_rules_set.add(rule) 
+                            for rule in violated_rules: violated_rules_set.add(rule)
 
                         if violated_rules_set:
                             # 🌟 完整保留的 Phase 3 RAG 觸發邏輯
@@ -744,73 +746,76 @@ if app_mode == "🎯 情資防禦戰情室":
                                                 st.markdown(st.session_state[rule_resp_key])
                                             elif not retrieved_images:
                                                 st.warning(f"⚠️ 找不到對應的法規原文影像檔 (路徑: {image_dir})")
-                            
-                            # ==========================================
-                            # ⭐ AI 主動免疫：Snort 規則生成 與 Multica 派工 (🌟完整復原)
-                            # ==========================================
-                            st.markdown("#### 🛡️ AI 主動免疫：網路層熱修補規則生成與派工")
-                            st.caption("系統正自動解析暗網駭客的攻擊手法，並轉譯為防火牆防禦規則，準備派發給 Agent 執行。")
-                            
-                            if not st.session_state.generated_rule:
-                                with st.spinner("🤖 正在編寫 Snort / ModSecurity 阻擋規則..."):
-                                    combined_content = st.session_state.get("combined_content", "")
-                                    rule_prompt = f"""
-                                    你是一名資深網路安全工程師。
-                                    我們的系統偵測到針對 {target_sw} 的攻擊即將發生。
-                                    暗網情報內容如下：
-                                    {combined_content[:2000]}
-                                    
-                                    請根據情報中提及的攻擊手法，直接輸出一條有效的 Snort IDS/IPS 阻擋規則。
-                                    若無法判斷細節，請輸出通用型的路徑穿越或 RCE 防護規則。
-                                    請務必只輸出規則代碼本身，不要包含任何解釋、也不要使用 Markdown 的 ``` 符號。
-                                    """
-                                    try:
-                                        if gemini_client:
-                                            st.session_state.generated_rule = gemini_client.models.generate_content(
-                                                model='gemini-2.5-flash',
-                                                contents=rule_prompt
-                                            ).text.replace('```', '').replace('snort', '').strip()
-                                    except Exception as e:
-                                        st.error(f"⚠️ 規則生成失敗：{e}")
-                            
-                            if st.session_state.generated_rule:
-                                st.success("✅ 免疫規則生成完畢！")
-                                st.code(st.session_state.generated_rule, language="bash")
-                                
-                                st.markdown("---")
-                                if st.button("🚀 傳送至 Agent Harness (Multica) 進行派工", type="primary", width='stretch'):
-                                    with st.spinner("正在封裝任務上下文並發送至 Multica..."):
-                                        multica_url = os.environ.get("MULTICA_API_URL")
-                                        multica_key = os.environ.get("MULTICA_API_KEY")
-                                        multica_workspace = os.environ.get("MULTICA_WORKSPACE_ID")
-                                        if not multica_url or not multica_key or not multica_workspace:
-                                            st.error("⚠️ 找不到設定，請確認 .env 包含 MULTICA_API_URL, MULTICA_API_KEY 與 MULTICA_WORKSPACE_ID。")
-                                        else:
-                                            st.info(f"📡 正在派工至: `{multica_url}`\nWorkspace: `{multica_workspace}`")
-                                            
-                                            payload = {
-                                                "title": f"🚨 [S.H.I.E.L.D.] {target_sw} 防禦任務",
-                                                "description": f"**偵測情資**：已發現針對 {target_sw} 的威脅。\n\n**執行指令**：\n```bash\n{st.session_state.generated_rule}\n```",
-                                                "priority": "high",
-                                                "status": "todo",
-                                                "project_id": "3c4a964a-02fa-4ab0-8af0-a4968b4fea6a"
-                                            }
-                                        
-                                            headers = {
-                                                "Authorization": f"Bearer {multica_key}",
-                                                "X-Workspace-ID": multica_workspace,
-                                                "Content-Type": "application/json"
-                                            }
-                                        
-                                            try:
-                                                response = requests.post(multica_url, json=payload, headers=headers)
-                                                if response.status_code in [200, 201]:
-                                                    st.success("✅ 任務工單已成功派發！數位員工 (Agent) 即將接手進行後續審批。")
-                                                    st.balloons()
-                                                else:
-                                                    st.error(f"❌ 派工失敗：伺服器回傳 {response.status_code}\n{response.text}")
-                                            except Exception as e:
-                                                st.error(f"❌ 連線異常：{e}")
+                        else:
+                            st.info(f"ℹ️ 受影響資產：{', '.join(impacted_assets)}，但未找到對應的合規規則。")
+
+                        # ==========================================
+                        # ⭐ AI 主動免疫：Snort 規則生成 與 Multica 派工
+                        # （移到外層，無論有無法規都要執行）
+                        # ==========================================
+                        st.markdown("#### 🛡️ AI 主動免疫：網路層熱修補規則生成與派工")
+                        st.caption("系統正自動解析暗網駭客的攻擊手法，並轉譯為防火牆防禦規則，準備派發給 Agent 執行。")
+
+                        if not st.session_state.generated_rule:
+                            with st.spinner("🤖 正在編寫 Snort / ModSecurity 阻擋規則..."):
+                                combined_content = st.session_state.get("combined_content", "")
+                                rule_prompt = f"""
+                                你是一名資深網路安全工程師。
+                                我們的系統偵測到針對 {target_sw} 的攻擊即將發生。
+                                暗網情報內容如下：
+                                {combined_content[:2000]}
+
+                                請根據情報中提及的攻擊手法，直接輸出一條有效的 Snort IDS/IPS 阻擋規則。
+                                若無法判斷細節，請輸出通用型的路徑穿越或 RCE 防護規則。
+                                請務必只輸出規則代碼本身，不要包含任何解釋、也不要使用 Markdown 的 ``` 符號。
+                                """
+                                try:
+                                    if gemini_client:
+                                        st.session_state.generated_rule = gemini_client.models.generate_content(
+                                            model='gemini-2.5-flash',
+                                            contents=rule_prompt
+                                        ).text.replace('```', '').replace('snort', '').strip()
+                                except Exception as e:
+                                    st.error(f"⚠️ 規則生成失敗：{e}")
+
+                        if st.session_state.generated_rule:
+                            st.success("✅ 免疫規則生成完畢！")
+                            st.code(st.session_state.generated_rule, language="bash")
+
+                            st.markdown("---")
+                            if st.button("🚀 傳送至 Agent Harness (Multica) 進行派工", type="primary", width='stretch'):
+                                with st.spinner("正在封裝任務上下文並發送至 Multica..."):
+                                    multica_url = os.environ.get("MULTICA_API_URL")
+                                    multica_key = os.environ.get("MULTICA_API_KEY")
+                                    multica_workspace = os.environ.get("MULTICA_WORKSPACE_ID")
+                                    if not multica_url or not multica_key or not multica_workspace:
+                                        st.error("⚠️ 找不到設定，請確認 .env 包含 MULTICA_API_URL, MULTICA_API_KEY 與 MULTICA_WORKSPACE_ID。")
+                                    else:
+                                        st.info(f"📡 正在派工至: `{multica_url}`\nWorkspace: `{multica_workspace}`")
+
+                                        payload = {
+                                            "title": f"🚨 [S.H.I.E.L.D.] {target_sw} 防禦任務",
+                                            "description": f"**偵測情資**：已發現針對 {target_sw} 的威脅。\n\n**執行指令**：\n```bash\n{st.session_state.generated_rule}\n```",
+                                            "priority": "high",
+                                            "status": "todo",
+                                            "project_id": "3c4a964a-02fa-4ab0-8af0-a4968b4fea6a"
+                                        }
+
+                                        headers = {
+                                            "Authorization": f"Bearer {multica_key}",
+                                            "X-Workspace-ID": multica_workspace,
+                                            "Content-Type": "application/json"
+                                        }
+
+                                        try:
+                                            response = requests.post(multica_url, json=payload, headers=headers)
+                                            if response.status_code in [200, 201]:
+                                                st.success("✅ 任務工單已成功派發！數位員工 (Agent) 即將接手進行後續審批。")
+                                                st.balloons()
+                                            else:
+                                                st.error(f"❌ 派工失敗：伺服器回傳 {response.status_code}\n{response.text}")
+                                        except Exception as e:
+                                            st.error(f"❌ 連線異常：{e}")
                                         
 # ------------------------------------------
 # 模式 B：【具備 CRUD 能力的知識庫建檔中心】

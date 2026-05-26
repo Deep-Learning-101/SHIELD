@@ -4,6 +4,14 @@
 
 **[TonTon H.-D. Huang Ph.D.](https://TWMAN.ORG)**
 
+- **相關文件**
+  - [**專案說明文檔**](https://deep-learning-101.github.io/SHIELD/PROJECT-OVERVIEW)
+  - [**Core Module**](https://deep-learning-101.github.io/SHIELD/core/)
+  - [**Shared Resources**](https://deep-learning-101.github.io/SHIELD/shared/)
+  - [**Modules**](https://deep-learning-101.github.io/SHIELD/modules/)
+  - [**Phase 5: AI 審計與合規模組**](https://deep-learning-101.github.io/SHIELD/modules/eval/)
+  - [**審計報告目錄**](https://deep-learning-101.github.io/SHIELD/shared/data/audit_results/)
+
 ---
 
 ## 📋 模組概述
@@ -103,15 +111,6 @@ python src/shield_audit_workflow.py
 
 ---
 
-## 📚 詳細文檔
-
-- [架構說明](docs/ARCHITECTURE.md)
-- [Conda 設置指南](docs/CONDA_SETUP_GUIDE.md)
-- [部署總結](docs/DEPLOYMENT_SUMMARY.md)
-- [快速開始](docs/QUICK_START.md)
-
----
-
 ## 🔗 與 Core 模組的整合
 
 ### 引用 Core 功能
@@ -179,5 +178,5 @@ pytest --cov=src tests/
 
 ---
 
-**版本**: v1.0.0  
-**最後更新**: 2026-05-25
+**版本**: v1.0.1  
+**最後更新**: 2026-05-26
