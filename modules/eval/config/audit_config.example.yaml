@@ -6,14 +6,34 @@
 # https://TWMAN.ORG
 # ═══════════════════════════════════════════════════════════════════════
 
+# # 1. 填入你的 NVIDIA NIM API Key
+# export NVIDIA_API_KEY="nvapi-你的金鑰字串"
+
+# 1. 將 NVIDIA 金鑰指派給 OPENAI_API_KEY (這是關鍵！)
+# export OPENAI_API_KEY="nvapi-請把這段換成你真實的NVIDIA金鑰"
+
+# # 2. 告訴 Inspect AI 將 OpenAI 的底層端點換成 NVIDIA 的
+# export OPENAI_BASE_URL="https://integrate.api.nvidia.com/v1"
+
+# # 3. 限制並發數為 1 (配合 10 秒限速，避免多線程同時衝出去)
+# inspect eval src/shield_audit_workflow.py --max-connections 1
+# inspect eval src/shield_audit_workflow.py --model openai/meta/llama-3.1-70b-instruct --max-connections 1
+
 # ───────────────────────────────────────────────────────────────────────
 # 審計目標設定 (Target Configuration)
 # ───────────────────────────────────────────────────────────────────────
 audit_target:
-  name: "Client_Hybrid_AI_Brain_v1"
-  endpoint: "http://localhost:8000/v1/infer"
-  auth_token: "${SHIELD_TARGET_API_KEY}"  # 從環境變數讀取
-  timeout_seconds: 30
+  name: "meta/llama-3.1-70b-instruct"       # 改成你要打的模型名稱 (範例)
+  endpoint: "https://integrate.api.nvidia.com/v1" # OpenAI 相容端點
+  auth_token: "${SHIELD_TARGET_API_KEY}"    # 執行前確保此環境變數是你的金鑰
+  timeout_seconds: 60                       # 建議拉長到 60 秒，雲端 API 回應有時會波動
+  request_delay_seconds: 10                 # ★ 新增設定：每次請求強制間隔 10 秒
+
+# audit_target:
+#   name: "openai/meta/llama-3.1-70b-instruct" # 加上 openai/ 前綴，讓 inspect 知道用哪種格式
+#   endpoint: "https://integrate.api.nvidia.com/v1"
+#   auth_token: "${NVIDIA_API_KEY}" # 指定環境變數
+#   timeout_seconds: 60
 
 # ───────────────────────────────────────────────────────────────────────
 # 資料精煉廠 (Data Refinery) - 合成資料生成
@@ -98,17 +118,17 @@ evaluation_judges:
 # ───────────────────────────────────────────────────────────────────────
 # 報告與輸出設定
 # ───────────────────────────────────────────────────────────────────────
-reporting:
-  output_directory: "./audit_results"
-  generate_html_report: true
-  generate_json_summary: true
-  include_raw_logs: false  # 生產環境建議關閉以保護機敏資訊
+# reporting:
+#   output_directory: "./audit_results"
+#   generate_html_report: true
+#   generate_json_summary: true
+#   include_raw_logs: false  # 生產環境建議關閉以保護機敏資訊
 
 # ───────────────────────────────────────────────────────────────────────
 # 高級設定 (Advanced Options)
 # ───────────────────────────────────────────────────────────────────────
 advanced:
-  parallel_workers: 4
+  parallel_workers: 1                       # ★ 關鍵：必須改成 1。如果開多線程，限速會失去意義
   enable_gpu_acceleration: true
-  log_level: "INFO"  # DEBUG | INFO | WARNING | ERROR
-  fail_fast: false   # 遇到錯誤是否立即中止
+  log_level: "INFO"  
+  fail_fast: false

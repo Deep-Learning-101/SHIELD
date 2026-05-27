@@ -1,54 +1,38 @@
 #!/bin/bash
-# 🛡️ SHIELD Phase 5 審計快速啟動腳本
-#
-# TonTon H.-D. Huang Ph.D.
-# https://TWMAN.ORG
 
+# 設定發生錯誤時立刻停止腳本
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MODULE_ROOT="$(dirname "$SCRIPT_DIR")"
-SHIELD_ROOT="$(dirname "$(dirname "$MODULE_ROOT")")"
+echo "========================================================"
+echo "🛡️ S.H.I.E.L.D. 自動化混合雙擎紅隊測試 (Red Teaming) 啟動"
+echo "========================================================"
 
-echo "🛡️  SHIELD Phase 5: AI 審計與合規啟動中..."
-echo "📂 模組目錄: $MODULE_ROOT"
-echo "📂 SHIELD 根目錄: $SHIELD_ROOT"
+# 移動到專案根目錄
+cd "$(dirname "$0")/../.."
 
-# 檢查虛擬環境
-if [[ "$VIRTUAL_ENV" == "" ]] && [[ "$CONDA_DEFAULT_ENV" == "" ]]; then
-    echo "⚠️  警告: 未偵測到 Python 虛擬環境"
-    echo "請先執行以下其中一個命令："
-    echo "  conda activate shield-audit-env"
-    echo "  source shield-audit-env/bin/activate"
-    exit 1
-fi
+# ---------------------------------------------------------
+# Step 1: 讓 Garak 產生惡意彈藥
+# ---------------------------------------------------------
+echo -e "\n💣 [Step 1/3] 啟動 Garak 生成惡意 Prompt..."
+# 拿掉路徑斜線，讓 Garak 乖乖寫入它的預設目錄
+python -m garak \
+    --model_type test \
+    --model_name dummy \
+    --probes promptinject \
+    --report_prefix shield_audit
 
-# 切換到模組目錄
-cd "$MODULE_ROOT"
+# ---------------------------------------------------------
+# Step 2: 進行彈藥轉換 (裝彈)
+# ---------------------------------------------------------
+echo -e "\n🔄 [Step 2/3] 將 Garak 產出轉換為 Inspect AI 格式..."
+python eval/convert_garak_to_inspect.py
 
-# 檢查配置文件
-if [[ ! -f "config/audit_config.yaml" ]]; then
-    echo "❌ 配置文件不存在: config/audit_config.yaml"
-    echo "請從範例文件複製："
-    echo "  cp config/audit_config.example.yaml config/audit_config.yaml"
-    exit 1
-fi
+# ---------------------------------------------------------
+# Step 3: Inspect AI 總控發射與裁判
+# ---------------------------------------------------------
+echo -e "\n🎯 [Step 3/3] 啟動 Inspect AI 進行防禦稽核與評分..."
+inspect eval eval/src/shield_audit_workflow.py --model openai/meta/llama-3.1-70b-instruct
 
-echo "✅ 環境檢查通過"
-echo ""
-
-# 執行審計
-echo "🚀 啟動 Inspect AI 審計工作流程..."
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-inspect eval src/shield_audit_workflow.py
-
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "✅ 審計完成！"
-echo ""
-echo "📊 報告位於: $SHIELD_ROOT/shared/data/audit_results/"
-echo ""
-echo "查看報告："
-echo "  cat $SHIELD_ROOT/shared/data/audit_results/latest_summary.json"
-echo ""
+echo -e "\n========================================================"
+echo "✅ 測試流程全數執行完畢！"
+echo "========================================================"

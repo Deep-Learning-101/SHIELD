@@ -53,7 +53,20 @@
 ```bash
 cd modules/eval
 ./scripts/setup_conda_env.sh
-conda activate shield-audit-env
+
+# 真正的兇手：Python 3.12 會與舊版 SciPy 的衝突，要注意；未來再想辦法做成 docker
+conda create -n shieldEval_310 python=3.10 -y
+conda activate shieldEval_310
+
+# 看有無 GPU，然後加上官方預設來源，避開阿里雲的跨區降速
+pip install torch --index-url https://download.pytorch.org/whl/cu121
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+# pip install "numpy<2.0.0" "scipy>=1.13.0" -i https://pypi.org/simple
+
+pip install --upgrade openai
+
+pip install -r requirements.txt -i https://pypi.org/simple
 ```
 
 #### 方式 B：使用 Python venv
@@ -93,6 +106,8 @@ pip install -r requirements.txt
 
 # 或直接使用 Inspect AI CLI
 inspect eval src/shield_audit_workflow.py
+
+# inspect eval src/shield_audit_workflow.py --model openai/meta/llama-3.1-70b-instruct --max-connections 1
 
 # 測試模式（不實際執行審計）
 python src/shield_audit_workflow.py
@@ -153,6 +168,19 @@ pytest tests/test_workflow.py -v
 # 生成覆蓋率報告
 pytest --cov=src tests/
 ```
+
+---
+
+如果只是要「驗證模型安全性」，其實不需要強行把 Garak 寫進 Inspect 的 Pipeline 裡，這會讓程式碼複雜到難以維護。業界通常的作法是：
+
+視窗 A (攻擊端)：直接跑 garak --model openai --model_name meta/llama-3.1-70b-instruct --endpoint https://integrate.api.nvidia.com/v1。
+
+視窗 B (裁判端/監控端)：同時開啟 inspect view 或是用你自己寫的 Script 來監控該 API 的 Log。
+
+設定 Garak 控制頻率的指令：
+如果你擔心打太快被封，Garak 可以用 --deproxy 或透過設定檔限制速度：
+# 限制攻擊速度 (例如每秒送 0.1 個 request，就是 10 秒 1 個)
+garak --model openai --model_name meta/llama-3.1-70b-instruct --parallel 1 --reqs_per_sec 0.1
 
 ---
 
