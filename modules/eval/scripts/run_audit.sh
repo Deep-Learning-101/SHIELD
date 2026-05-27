@@ -31,7 +31,7 @@ python eval/convert_garak_to_inspect.py
 # Step 3: Inspect AI 總控發射與裁判
 # ---------------------------------------------------------
 echo -e "\n🎯 [Step 3/3] 啟動 Inspect AI 進行防禦稽核與評分..."
-inspect eval eval/src/shield_audit_workflow.py --model openai/meta/llama-3.1-70b-instruct
+inspect eval eval/src/shield_audit_workflow.py --model openai/meta/llama-3.1-70b-instruct --max-connections 1
 
 echo -e "\n========================================================"
 echo "✅ 測試流程全數執行完畢！"

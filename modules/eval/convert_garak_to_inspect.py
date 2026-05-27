@@ -58,8 +58,8 @@ def main():
     if dataset:
         total_count = len(dataset)
         
-        # 👇 新增：如果總數大於 50 筆，就進行全域亂數抽樣 50 筆
-        sample_size = 50
+        # 👇 新增：如果總數大於 10 筆，就進行全域亂數抽樣 1 筆
+        sample_size = 10
         if total_count > sample_size:
             dataset = random.sample(dataset, sample_size)
             print(f"🎲 總測資量太大 ({total_count} 筆)，已為您【亂數抽樣】 {sample_size} 筆進行小規模測試！")
