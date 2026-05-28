@@ -69,13 +69,13 @@ pip install --upgrade openai
 pip install -r requirements.txt -i https://pypi.org/simple
 ```
 
-#### 方式 B：使用 Python venv
+<!-- #### 方式 B：使用 Python venv
 
 ```bash
 cd modules/eval
 python3 -m venv audit-env
 source audit-env/bin/activate  # Windows: audit-env\Scripts\activate
-pip install -r requirements.txt
+pip install -r requirements.txt -->
 ```
 
 ### 配置審計目標
