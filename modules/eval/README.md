@@ -29,11 +29,12 @@
 
 ```
 攻擊端 (Actor)          目標端 (Target)        裁判端 (Judge)
-├─ Garak              ├─ 客戶 AI 系統       ├─ GuardVal
-├─ FuzzyAI            ├─ NeMo Guards        ├─ TruLens
-├─ Gemma-CRACK        └─ Vectorless RAG     ├─ Giskard
-├─ IBM ART                                  ├─ SHAP
-└─ Foolbox                                  └─ Captum
+├─ Garak              ├─ 客戶 AI 系統        ├─Inspect AI
+├─ FuzzyAI            ├─ NeMo Guards        ├─ GuardVal
+├─ Gemma-CRACK        └─ Vectorless RAG     ├─ TruLens
+├─ IBM ART                                  ├─ Giskard
+└─ Foolbox                                  ├─ SHAP
+                                            └─ Captum
 ```
 
 ---
@@ -75,8 +76,8 @@ pip install -r requirements.txt -i https://pypi.org/simple
 cd modules/eval
 python3 -m venv audit-env
 source audit-env/bin/activate  # Windows: audit-env\Scripts\activate
-pip install -r requirements.txt -->
-```
+pip install -r requirements.txt
+```-->
 
 ### 配置審計目標
 
@@ -113,9 +114,9 @@ inspect eval src/shield_audit_workflow.py
 python src/shield_audit_workflow.py
 ```
 
-========================================================
-🛡️ S.H.I.E.L.D. 自動化混合雙擎紅隊測試 (Red Teaming) 啟動
-========================================================
+========================================================  
+🛡️ S.H.I.E.L.D. 自動化混合雙擎紅隊測試 (Red Teaming) 啟動  
+========================================================  
 
 ```
 💣 [Step 1/3] 啟動 Garak 生成惡意 Prompt...
@@ -137,9 +138,9 @@ promptinject.HijackLongPrompt                                         promptinje
 ✅ 成功寫入 10 筆測資！
 💾 已儲存至專案目錄: adversarial_dataset.json\n
 🎯 [Step 3/3] 啟動 Inspect AI 進行防禦稽核與評分...
-══════════════════════════════════════════════════════════════════════
+══════════════════════════════════════════════════════════
 S.H.I.E.L.D. 審計平台 - 混合雙擎工作流程啟動
-══════════════════════════════════════════════════════════════════════
+══════════════════════════════════════════════════════════
 [目標系統] openai/meta/llama-3.1-70b-instruct
 [端點位址] https://integrate.api.nvidia.com/v1
 [組裝攻擊端武器庫]
@@ -190,10 +191,10 @@ Log: logs/2026-05-27T08-31-36-00-00_shield-hybrid-audit_F7LWTwrknYRBZgLUb3csce.e
 審計完成後，報告將位於：
 
 ```
-SHIELD/modules/logs/
+SHIELD/modules/eval/logs/
 ```
 
-bash eval/scripts/view_report.sh
+bash scripts/view_report.sh
 
 ---
 

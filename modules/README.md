@@ -38,19 +38,12 @@
 #### Actor-Judge 雙腦架構
 ```
 攻擊端 (Actor)          目標端 (Target)        裁判端 (Judge)
-├─ Garak              ├─ 客戶 AI 系統       ├─ GuardVal
-├─ FuzzyAI            ├─ NeMo Guards        ├─ TruLens
-├─ Gemma-CRACK        └─ Vectorless RAG     ├─ Giskard
-├─ IBM ART                                  ├─ SHAP
-└─ Foolbox                                  └─ Captum
-```
-
-#### 快速啟動
-```bash
-cd modules/eval
-./scripts/setup_conda_env.sh
-conda activate shield-audit-env
-./scripts/run_audit.sh
+├─ Garak              ├─ 客戶 AI 系統        ├─Inspect AI
+├─ FuzzyAI            ├─ NeMo Guards        ├─ GuardVal
+├─ Gemma-CRACK        └─ Vectorless RAG     ├─ TruLens
+├─ IBM ART                                  ├─ Giskard
+└─ Foolbox                                  ├─ SHAP
+                                            └─ Captum
 ```
 
 ---
