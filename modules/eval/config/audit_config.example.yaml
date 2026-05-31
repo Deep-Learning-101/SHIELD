@@ -58,7 +58,7 @@ weapons_loadout:
       - "encoding"
       - "dan"
       - "malwaregen"
-    enable_fuzzyai: false
+    enable_fuzzyai: true
     fuzzyai_mutation_rate: 0.3
 
   # 傳統 ML/DL (CV & Audio) 攻擊武器庫

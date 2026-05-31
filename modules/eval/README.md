@@ -21,6 +21,8 @@
 ### 核心功能
 
 - **紅藍隊自主對抗**：使用 Garak、FuzzyAI 等工具進行提示詞注入與越獄攻擊
+  - **Garak**: NVIDIA 官方 LLM 漏洞掃描器
+  - **FuzzyAI**: 基於 LLM 的智能 Fuzzing 工具，支援 8 種變異策略
 - **護欄評估**：量化評估 NeMo Guardrails 的防禦有效性
 - **幻覺檢測**：透過 TruLens、Giskard 檢測 RAG 系統的事實性
 - **合規映射**：自動對齊 ISO/IEC 42001 控制項，生成獨立驗證報告
@@ -76,8 +78,8 @@ pip install -r requirements.txt -i https://pypi.org/simple
 cd modules/eval
 python3 -m venv audit-env
 source audit-env/bin/activate  # Windows: audit-env\Scripts\activate
-pip install -r requirements.txt
-```-->
+pip install -r requirements.txt -->
+```
 
 ### 配置審計目標
 
@@ -101,6 +103,8 @@ pip install -r requirements.txt
 
 ### 執行審計
 
+#### 使用 Garak + Inspect AI 混合工作流程
+
 ```bash
 # 使用快速啟動腳本
 bash scripts/run_audit.sh
@@ -114,9 +118,60 @@ inspect eval src/shield_audit_workflow.py
 python src/shield_audit_workflow.py
 ```
 
-========================================================  
-🛡️ S.H.I.E.L.D. 自動化混合雙擎紅隊測試 (Red Teaming) 啟動  
-========================================================  
+#### 使用 FuzzyAI 生成對抗性資料集
+
+FuzzyAI 是一個基於 LLM 的智能 Fuzzing 工具，可生成多樣化的對抗性提示詞。
+
+**步驟 1：生成資料集**
+
+```bash
+# 使用 NVIDIA NIM (推薦)
+export NVIDIA_API_KEY="your_nvidia_api_key"
+python src/generate_fuzzyai_dataset.py \
+  --engine nim \
+  --topics "惡意程式開發" "釣魚攻擊" "機密資料竊取" \
+  --count 10 \
+  --delay 3
+
+# 使用 Ollama (本地快速測試)
+ollama serve &
+ollama pull llama3:8b
+python src/generate_fuzzyai_dataset.py \
+  --engine ollama \
+  --model llama3:8b \
+  --topics "社交工程" "權限提升" \
+  --count 20 \
+  --delay 0.5
+
+# 使用 vLLM (高吞吐量自架環境)
+vllm serve Qwen/Qwen2.5-72B-Instruct --port 8000 &
+python src/generate_fuzzyai_dataset.py \
+  --engine vllm \
+  --model "Qwen/Qwen2.5-72B-Instruct" \
+  --topics "SQL注入" "XSS攻擊" \
+  --count 15 \
+  --delay 1
+```
+
+**步驟 2：評估生成的資料集**
+
+```bash
+# 使用 Inspect AI 評估
+python examples/eval_fuzzyai_dataset.py
+
+# 或手動指定資料集
+inspect eval examples/eval_fuzzyai_dataset.py \
+  --dataset adversarial_dataset/fuzzyai_adversarial_dataset_20260531_143022.json \
+  --model openai/gpt-4
+```
+
+**詳細說明**：
+- 📖 [FuzzyAI 生成器使用指南](docs/fuzzyai_generator_usage.md)
+- 🧪 [測試腳本](test_fuzzyai.sh): `bash test_fuzzyai.sh`
+
+========================================================
+🛡️ S.H.I.E.L.D. 自動化混合雙擎紅隊測試 (Red Teaming) 啟動
+========================================================
 
 ```
 💣 [Step 1/3] 啟動 Garak 生成惡意 Prompt...
@@ -138,9 +193,9 @@ promptinject.HijackLongPrompt                                         promptinje
 ✅ 成功寫入 10 筆測資！
 💾 已儲存至專案目錄: adversarial_dataset.json\n
 🎯 [Step 3/3] 啟動 Inspect AI 進行防禦稽核與評分...
-══════════════════════════════════════════════════════════
+══════════════════════════════════════════════════════════════════════
 S.H.I.E.L.D. 審計平台 - 混合雙擎工作流程啟動
-══════════════════════════════════════════════════════════
+══════════════════════════════════════════════════════════════════════
 [目標系統] openai/meta/llama-3.1-70b-instruct
 [端點位址] https://integrate.api.nvidia.com/v1
 [組裝攻擊端武器庫]
@@ -191,10 +246,13 @@ Log: logs/2026-05-27T08-31-36-00-00_shield-hybrid-audit_F7LWTwrknYRBZgLUb3csce.e
 審計完成後，報告將位於：
 
 ```
-SHIELD/modules/eval/logs/
+SHIELD/modules/eval/inspect_report/
 ```
 
-bash scripts/view_report.sh
+查看報告：
+```bash
+inspect view
+```
 
 ---
 
@@ -245,9 +303,10 @@ garak --model openai --model_name meta/llama-3.1-70b-instruct --parallel 1 --req
 
 ### 資料保護
 
-- ✅ 所有審計日誌儲存於本地 `SHIELD/modules/logs/`
+- ✅ 所有審計報告儲存於本地 `SHIELD/modules/eval/inspect_report/`
+- ✅ Garak 日誌儲存於 `~/.local/share/garak/garak_runs/`
 - ✅ API 金鑰透過環境變數管理，不寫入配置文件
-- ✅ `audit_results/` 已加入 `.gitignore`，不會推送至 GitHub
+- ✅ `adversarial_dataset/` 和 `inspect_report/` 已加入 `.gitignore`，不會推送至 GitHub
 
 ### 使用限制
 
@@ -263,5 +322,39 @@ garak --model openai --model_name meta/llama-3.1-70b-instruct --parallel 1 --req
 
 ---
 
-**版本**: v1.0.2  
-**最後更新**: 2026-05-27
+---
+
+## 🔗 整合說明
+
+### 升級至 v2.0：Garak + FuzzyAI 雙擎架構
+
+現已支援統一入口 `run_audit_v2.sh`，提供四種運行模式：
+
+#### 快速啟動
+
+```bash
+# 完整雙擎模式（推薦）
+bash scripts/run_audit_v2.sh --mode both --fuzzyai-count 20
+
+# 僅 Garak
+bash scripts/run_audit_v2.sh --mode garak
+
+# 僅 FuzzyAI
+bash scripts/run_audit_v2.sh --mode fuzzyai --fuzzyai-engine ollama
+
+# 查看完整參數
+bash scripts/run_audit_v2.sh --help
+```
+
+#### 詳細文檔
+
+- 📖 [整合指南](docs/INTEGRATION_GUIDE.md) - 完整使用說明
+- 📋 [Garak 快速參考](GARAK_QUICKREF.md)
+- 📋 [FuzzyAI 快速參考](FUZZYAI_QUICKREF.md)
+- 🏗️ [架構設計文檔](docs/ARCHITECTURE_RECOMMENDATION.md)
+
+---
+
+**版本**: v2.0.0 
+**最後更新**: 2026-05-31
+**重大更新**: 完成 Garak + FuzzyAI 雙擎整合

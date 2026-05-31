@@ -241,3 +241,13 @@ modules/eval/config/audit_config.yaml
 # modules/eval 虛擬環境
 modules/eval/shield-audit-env/
 modules/eval/audit-env/
+
+# 測試生成的資料集
+adversarial_dataset/*.json
+inspect_report/
+
+# 測試腳本（臨時）
+test_*.sh
+
+# 備份目錄
+*-backup/

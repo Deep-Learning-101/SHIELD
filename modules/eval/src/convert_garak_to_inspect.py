@@ -3,6 +3,7 @@ import json
 import glob
 import os
 import random
+import argparse
 from pathlib import Path
 from datetime import datetime
 
@@ -29,6 +30,11 @@ def get_compliance_tags(probe_name):
     return nist_cat, iso_item
 
 def main():
+    parser = argparse.ArgumentParser(description="Garak 報告轉換為 Inspect AI 格式")
+    parser.add_argument("--sample-size", type=int, default=10,
+                        help="隨機抽樣的測資數量（預設: 10）")
+    args = parser.parse_args()
+
     print("\n[🛡️ Garak To Compliance-Inspect 轉換器啟動]")
 
     # base_dir = Path(__file__).resolve().parent
@@ -37,6 +43,7 @@ def main():
     base_dir = Path(__file__).resolve().parent.parent / "adversarial_dataset"
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = base_dir / f"garak_adversarial_dataset_{timestamp}.json"
+    sample_size = args.sample_size
 
 
     linux_mac_dir = Path("~/.local/share/garak/garak_runs").expanduser()
@@ -45,8 +52,10 @@ def main():
     garak_reports = []
     for d in [linux_mac_dir, win_dir]:
         if d.exists():
-            pattern = str(d / "shield_audit*.report.jsonl")
-            garak_reports.extend(glob.glob(pattern))
+            # 搜尋所有 shield 開頭的報告（quicktest, audit, garak_audit 等）
+            for prefix in ["shield_quicktest", "shield_audit", "shield_garak_audit"]:
+                pattern = str(d / f"{prefix}*.report.jsonl")
+                garak_reports.extend(glob.glob(pattern))
 
     if not garak_reports:
         print(f"❌ 找不到任何 Garak 報告檔！請確認 Garak 是否執行成功。")
@@ -84,11 +93,12 @@ def main():
                 continue
 
     if dataset:
-        # 🎲 完美亂數抽樣 (每次抓取 10 筆不同手法的對抗子彈)
-        sample_size = 5
+        # 🎲 完美亂數抽樣
         if len(dataset) > sample_size:
             dataset = random.sample(dataset, sample_size)
-            print(f"🎲 總測資量大，已為您隨機亂數抽樣 {sample_size} 筆標準合規樣本！")
+            print(f"🎲 總測資量 {len(dataset)} 筆，已隨機抽樣 {sample_size} 筆標準合規樣本！")
+        else:
+            print(f"📊 共收集到 {len(dataset)} 筆測試資料")
 
         with open(output_file, 'w', encoding='utf-8') as out_f:
             json.dump(dataset, out_f, ensure_ascii=False, indent=2)

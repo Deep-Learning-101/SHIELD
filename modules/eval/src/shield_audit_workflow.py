@@ -457,21 +457,26 @@ GRADE: I  (代表 INCORRECT/FAIL/越獄)
         ]
 
 # ───────────────────────────────────────────────────────────────────
-    # Step 4: 建立測試資料集 (整合 Garak 彈藥庫)
+    # Step 4: 建立測試資料集 (整合 Garak + FuzzyAI 彈藥庫)
     # ───────────────────────────────────────────────────────────────────
     print("\n[載入測試資料集]")
     dataset = []
-    
-    # 檢查 yaml 設定是否啟用了 Garak
+    garak_count = 0
+    fuzzyai_count = 0
+
+    # 檢查 yaml 設定是否啟用了攻擊工具
     weapons = config.get('weapons_loadout', {}).get('genai_text', {})
 
+    # 設定 adversarial_dataset 目錄的路徑
+    import json
+    import glob
+
+    dataset_dir = Path(__file__).resolve().parent.parent / "adversarial_dataset"
+
+    # ─────────────────────────────────────────────────────────────────
+    # 載入 Garak 資料集
+    # ─────────────────────────────────────────────────────────────────
     if weapons.get('enable_garak_injection', False):
-        # 設定 adversarial_dataset 目錄的路徑
-        import json
-        import glob
-
-        dataset_dir = Path(__file__).resolve().parent.parent / "adversarial_dataset"
-
         if dataset_dir.exists():
             # 使用 glob 找出最新的 garak_adversarial_dataset_*.json 檔案
             pattern = str(dataset_dir / "garak_adversarial_dataset_*.json")
@@ -480,7 +485,7 @@ GRADE: I  (代表 INCORRECT/FAIL/越獄)
             if matching_files:
                 # 取得最新的檔案
                 latest_dataset = max(matching_files, key=os.path.getctime)
-                print(f"📥 偵測到 Garak 轉換資料集，正在載入: {Path(latest_dataset).name}")
+                print(f"📥 偵測到 Garak 資料集，正在載入: {Path(latest_dataset).name}")
 
                 with open(latest_dataset, 'r', encoding='utf-8') as f:
                     raw_data = json.load(f)
@@ -494,15 +499,58 @@ GRADE: I  (代表 INCORRECT/FAIL/越獄)
                             metadata=item.get("metadata", {})
                         )
                     )
-                print(f"✅ 成功載入 {len(dataset)} 筆 Garak 惡意測資！")
+                garak_count = len(raw_data)
+                print(f"✅ Garak 資料集載入成功: {garak_count} 筆")
             else:
                 print(f"⚠️ 在 {dataset_dir} 目錄中找不到任何 garak_adversarial_dataset_*.json 檔案。")
-                print("   請確認是否已執行 convert_garak_to_inspect.py。")
+                print("   請執行: python src/convert_garak_to_inspect.py")
         else:
             print(f"⚠️ 找不到 adversarial_dataset 目錄: {dataset_dir}")
-            print("   請確認是否已執行 convert_garak_to_inspect.py。")
-            
-    # Fallback 機制：如果 Garak 資料沒載入成功，或是沒啟用，使用預設測試集
+
+    # ─────────────────────────────────────────────────────────────────
+    # 載入 FuzzyAI 資料集
+    # ─────────────────────────────────────────────────────────────────
+    if weapons.get('enable_fuzzyai', False):
+        if dataset_dir.exists():
+            # 使用 glob 找出最新的 fuzzyai_adversarial_dataset_*.json 檔案
+            pattern = str(dataset_dir / "fuzzyai_adversarial_dataset_*.json")
+            matching_files = glob.glob(pattern)
+
+            if matching_files:
+                # 取得最新的檔案
+                latest_dataset = max(matching_files, key=os.path.getctime)
+                print(f"📥 偵測到 FuzzyAI 資料集，正在載入: {Path(latest_dataset).name}")
+
+                with open(latest_dataset, 'r', encoding='utf-8') as f:
+                    raw_data = json.load(f)
+
+                # 將 JSON 資料轉換為 Inspect AI 的 Sample 物件
+                for item in raw_data:
+                    dataset.append(
+                        Sample(
+                            input=item["input"],
+                            target=item["target"],
+                            metadata=item.get("metadata", {})
+                        )
+                    )
+                fuzzyai_count = len(raw_data)
+                print(f"✅ FuzzyAI 資料集載入成功: {fuzzyai_count} 筆")
+            else:
+                print(f"⚠️ 在 {dataset_dir} 目錄中找不到任何 fuzzyai_adversarial_dataset_*.json 檔案。")
+                print("   請執行: python src/generate_fuzzyai_dataset.py")
+        else:
+            print(f"⚠️ 找不到 adversarial_dataset 目錄: {dataset_dir}")
+
+    # ─────────────────────────────────────────────────────────────────
+    # 顯示統計資訊
+    # ─────────────────────────────────────────────────────────────────
+    if dataset:
+        print(f"\n📊 資料集統計:")
+        print(f"  ├─ Garak 測資: {garak_count} 筆")
+        print(f"  ├─ FuzzyAI 測資: {fuzzyai_count} 筆")
+        print(f"  └─ 總計: {len(dataset)} 筆")
+
+    # Fallback 機制：如果沒有載入任何資料，使用預設測試集
     if not dataset:
         print("⚠️ 使用系統預設的基礎測試集")
         dataset = [
