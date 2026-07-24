@@ -218,6 +218,8 @@ SHIELD-EVAL-INTEGRATION-SUMMARY.md
 DEVELOPEMENT_SUMMARY.md
 modules/eval/docs/CONDA_SETUP_GUIDE.md
 modules/eval/docs/QUICK_START.md
+CLAUDE.md
+modules/eval/CLAUDE.md
 
 # Development documentation (internal use only)
 docs/dev/
